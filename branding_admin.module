@@ -1,0 +1,54 @@
+<?php
+
+function branding_admin_menu() {
+  $items = array();
+
+  $items['fileupload'] = array(
+    'title' => 'Upload private file.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('branding_admin_form'),
+    'access arguments' => array('upload private files'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+
+function branding_admin_form() {
+   
+    $form = array();
+    $form['#attributes'] = array('enctype' => "multipart/form-data");
+    $form['branded_logotyp'] = array(
+                    '#type' => 'file',
+                    '#title' => t('Logotyp:'),
+                    '#size' => 60,
+                    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Submit',
+        '#weight' => 10
+    );
+   
+    return $form;
+}
+
+function branding_admin_form_submit(&$form, &$form_state) {
+
+
+   if ($file = file_save_upload('branded_logotyp', array( 'file_validate_extensions' => array('csv')))) {
+        $parts = pathinfo($file->filename);
+		$filename = $parts['basename'];
+		
+    if (file_copy($file, $filename, FILE_EXISTS_REPLACE)) {
+          variable_set('zimonitor_branded_logotyp', $file->filepath);
+        }
+        cache_clear_all();
+        drupal_set_message("Yes");
+
+    }else{
+        drupal_set_message("No");
+    }
+}
+ 
